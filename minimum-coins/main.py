@@ -13,7 +13,24 @@ def get_change(value: float, denomination: Tuple[float, ...]) -> List[float]:
         A list of coin denominations used to make the change
     """
     # Write your code here
-    pass
+    change = []
+    temp = value
+    prec = 0
+    for coin in denomination:
+        ls = str(coin).split(".")
+        if len(ls) == 2 and len(ls[1]) > prec:
+            prec = len(ls[1])
+    mult = 10 ** prec
+    temp = int(temp * mult)
+    for coin in denomination:
+        coin = int(coin * mult)
+        div, mod = divmod(temp, coin)
+        temp = mod
+        for i in range(div):
+            change.append(coin / mult)
+        if temp == 0:
+            break
+    return change
 
 
 def get_change_limited(value: float, available_coins: List[float]) -> List[float]:
@@ -28,7 +45,23 @@ def get_change_limited(value: float, available_coins: List[float]) -> List[float
         A list of coin denominations used to make the change
     """
     # Write your code here
-    pass
+    change = []
+    temp = value
+    prec = 0
+    for coin in available_coins:
+        ls = str(coin).split(".")
+        if len(ls) == 2 and len(ls[1]) > prec:
+            prec = len(ls[1])
+    mult = 10 ** prec
+    temp = int(temp * mult)
+    for coin in available_coins:
+        coin = int(coin * mult)
+        if temp >= coin:
+            temp -= coin
+            change.append(coin / mult)
+        if temp == 0:
+            break
+    return change
 
 
 def get_change_recursive(value: int, denominations: Tuple[int, ...]) -> List[int]:
@@ -43,7 +76,21 @@ def get_change_recursive(value: int, denominations: Tuple[int, ...]) -> List[int
         A list of coin denominations used to make the change
     """
     # Write your code here
-    pass
+    temp = value
+    if temp == 0 or len(denominations) == 0:
+        return []
+    add = None
+    if temp >= denominations[0]:
+        temp -= denominations[0]
+        add = denominations[0]
+        new_input = denominations
+    else:
+        new_input = denominations[1:]
+    change = get_change_recursive(temp, new_input)
+    if add != None:
+        change.append(add)
+    return change
+
 
 
 def count_coins(coins: List[float]) -> dict:
@@ -57,7 +104,13 @@ def count_coins(coins: List[float]) -> dict:
         A dictionary with denomination as key and count as value
     """
     # Write your code here
-    pass
+    output = {}
+    for coin in coins:
+        if coin in output.keys():
+            output[coin] += 1
+        else:
+            output[coin] = 1
+    return output
 
 
 def validate_change(coins: List[float], target_value: float) -> bool:
@@ -72,4 +125,20 @@ def validate_change(coins: List[float], target_value: float) -> bool:
         True if the coins sum to the target value, False otherwise
     """
     # Write your code here
-    pass
+    inputsum = 0
+    prec = 0
+    for coin in coins:
+        ls = str(coin).split(".")
+        if len(ls) == 2 and len(ls[1]) > prec:
+            prec = len(ls[1])
+    mult = 10 ** prec
+    for coin in coins:
+        inputsum += int(coin * mult)
+    return inputsum == int(target_value * mult)
+
+if __name__ == "__main__":
+    breakpoint()
+    print(get_change(0.25, [1.00, 0.50, 0.20, 0.10, 0.05, 0.01]))
+    print(get_change_limited(0.90, [1.00, 0.20, 0.20, 0.20, 0.20, 0.20, 0.10, 0.10]))
+    print(get_change_recursive(67, (100, 50, 25, 10, 5, 1)))
+    print(validate_change((0.5, 0.1, 0.05, 0.03, 0.01, 0.01),0.7))
