@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 
-def simple_diff(text1: str, text2: str) -> str:
+def simple_diff(text1: str, text2: str) -> str: # line 85, 55, 67
     """
     Compare two texts line by line and show differences.
 
@@ -15,37 +15,91 @@ def simple_diff(text1: str, text2: str) -> str:
         - '-' for lines removed from text1
         - '+' for lines added in text2
     """
-    # Step 1: Split into lines
-    lines1 = text1.split('\n')
-    lines2 = text2.split('\n')
+    # # Step 1: Split into lines
+    # lines1 = text1.split('\n')
+    # lines2 = text2.split('\n')
 
-    # Step 2: Find the maximum length
-    max_length = max(len(lines1), len(lines2))
+    # # Step 2: Find the maximum length
+    # max_length = max(len(lines1), len(lines2))
 
-    result = []
+    # result = []
 
-    # Step 3: Compare line by line
-    for i in range(max_length):
-        # Handle case where one text is shorter
-        if i >= len(lines1):
-            # Only in text2 (addition)
-            result.append(f"+ {lines2[i]}")
-        elif i >= len(lines2):
-            # Only in text1 (deletion)
-            result.append(f"- {lines1[i]}")
-        elif lines1[i] == lines2[i]:
-            # Same in both
-            result.append(f"  {lines1[i]}")
+    # # Step 3: Compare line by line
+    # for i in range(max_length):
+    #     # Handle case where one text is shorter
+    #     if i >= len(lines1):
+    #         # Only in text2 (addition)
+    #         result.append(f"+ {lines2[i]}")
+    #     elif i >= len(lines2):
+    #         # Only in text1 (deletion)
+    #         result.append(f"- {lines1[i]}")
+    #     elif lines1[i] == lines2[i]:
+    #         # Same in both
+    #         result.append(f"  {lines1[i]}")
+    #     else:
+    #         # Different
+    #         result.append(f"- {lines1[i]}")
+    #         result.append(f"+ {lines2[i]}")
+
+    # # Step 4: Join with newlines
+    # return '\n'.join(result)
+    if texts_are_identical(text1, text2):
+        return ""
+    
+    common = find_common_lines(text1, text2)
+    lines1 = text1.split("\n")
+    lines2 = text2.split("\n")
+    repeat = {}
+    com1 = []
+    com2 = []
+    add = []
+    minus = []
+
+    for line in common:
+        count1 = lines1.count(line)
+        count2 = lines2.count(line)
+        repeat[line] = (count1, count2)
+    
+    for i in range(len(lines1)):
+        if lines1[i] in common and len(com1) < repeat[lines1[i]][0]:
+            com1.append(i)
         else:
-            # Different
-            result.append(f"- {lines1[i]}")
-            result.append(f"+ {lines2[i]}")
+            minus.append(i)
+    
+    for i in range(len(lines2)):
+        if lines2[i] in common and len(com2) < repeat[lines2[i]][1]:
+            com2.append(i)
+        else:
+            add.append(i)
 
-    # Step 4: Join with newlines
-    return '\n'.join(result)
+    for i in range(len(com1)):
+        if com1[i] > com2[i]:
+            for j in range(com1[i] - com2[i]):
+                lines2.insert(com2[i], None)
+        elif com1[i] < com2[i]:
+            for j in range(com2[i] - com1[i]):
+                lines1.insert(com1[i], None)
+    
+    if len(lines1) > len(lines2):
+        for i in range(len(lines1) - len(lines2)):
+            lines2.append(None)
+    elif len(lines1) < len(lines2):
+        for i in range(len(lines2) - len(lines1)):
+            lines1.append(None)
+    
+    output = []
+    for i in range(len(lines1)):
+        if lines1[i] == lines2[i] and lines1[i] != None:
+            output.append("  " + lines1[i])
+        elif lines1[i] != lines2[i]:
+            if lines1[i] != None:
+                output.append("- " + lines1[i])
+            if lines2[i] != None:
+                output.append("+ " + lines2[i])
+    return "\n".join(output)
 
 
-def count_lines_by_status(diff_output: str) -> Dict[str, int]:
+def count_lines_by_status(diff_output: str) -> Dict[str, int]: # line 103, 115
     """
     Count lines by their status in the diff output.
 
@@ -56,10 +110,18 @@ def count_lines_by_status(diff_output: str) -> Dict[str, int]:
         A dictionary with keys 'same', 'removed', 'added' and their counts
     """
     # Write your code here
-    pass
+    output = {"same": 0, "removed": 0, "added": 0}
+    for line in diff_output:
+        if line[0] == " ":
+            output["same"] += 1
+        elif line[0] == "-":
+            output["removed"] += 1
+        else:
+            output["added"] += 1
+    return output
 
 
-def apply_diff(original_text: str, diff_output: str) -> str:
+def apply_diff(original_text: str, diff_output: str) -> str: # line 128, 138, 243
     """
     Apply the diff output to original text to get the modified version.
 
@@ -71,7 +133,11 @@ def apply_diff(original_text: str, diff_output: str) -> str:
         The modified text after applying the diff
     """
     # Write your code here
-    pass
+    output = []
+    for line in diff_output:
+        if line[0] == " " or line[0] == "+":
+            output.append(line[2:])
+    return "\n".join(output)
 
 
 def find_common_lines(text1: str, text2: str) -> List[str]:
@@ -86,7 +152,17 @@ def find_common_lines(text1: str, text2: str) -> List[str]:
         A list of lines that appear in both texts, in order from text1
     """
     # Write your code here
-    pass
+    lines1 = text1.split("\n")
+    lines2 = text2.split("\n")
+    output = []
+    repeats = {}
+    for line in lines1:
+        if line not in repeats.keys():
+            repeats[line] = 0
+        if repeats[line] < lines2.count(line):
+            output.append(line)
+            repeats[line] += 1
+    return output
 
 
 def reverse_diff(diff_output: str) -> str:
@@ -100,7 +176,14 @@ def reverse_diff(diff_output: str) -> str:
         The reversed diff output
     """
     # Write your code here
-    pass
+    for line in diff_output:
+        if line[0] == "+":
+            rest = line[1:]
+            line = "-" + rest
+        elif line[0] == "-":
+            rest = line[1:]
+            line[0] = "+" + rest
+    return diff_output
 
 
 def texts_are_identical(text1: str, text2: str) -> bool:
@@ -115,4 +198,36 @@ def texts_are_identical(text1: str, text2: str) -> bool:
         True if texts are identical, False otherwise
     """
     # Write your code here
-    pass
+    lines1 = text1.split("\n")
+    lines2 = text2.split("\n")
+    if len(lines1) != len(lines2):
+        return False
+    for i in range(len(lines1)):
+        if lines1[i] != lines2[i]:
+            return False
+    return True
+
+if __name__ == "__main__":
+    # Test 1: Identical texts
+    text1 = "Hello\nWorld"
+    text2 = "Hello\nWorld"
+    print(simple_diff(text1, text2))
+    # Expected: only '  ' markers
+
+    # Test 2: Completely different
+    text1 = "A\nB\nC"
+    text2 = "X\nY\nZ"
+    print(simple_diff(text1, text2))
+    # Expected: alternating '-' and '+' markers
+
+    # Test 3: Text2 is longer
+    text1 = "Hello"
+    text2 = "Hello\nWorld"
+    print(simple_diff(text1, text2))
+    # Expected: one '+' marker
+
+    # Test 4: Text1 is longer
+    text1 = "Hello\nWorld"
+    text2 = "Hello"
+    print(simple_diff(text1, text2))
+    # Expected: one '-' marker
