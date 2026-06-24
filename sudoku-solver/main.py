@@ -104,7 +104,6 @@ def is_correct(puzzle: list) -> bool:
     # Check all numbers 1-9 appear exactly once
     return sorted(all_numbers) == list(range(1, 10))
 
-
 def solve(original_puzzle: list) -> Optional[list]:
     """
     Attempts to solve puzzle using recursive backtracking.
@@ -119,43 +118,59 @@ def solve(original_puzzle: list) -> Optional[list]:
     Returns:
         The solved puzzle if successful, None if unsolvable
     """
-    # Make a copy to avoid modifying the original
+    # # Make a copy to avoid modifying the original
+    # puzzle = deepcopy(original_puzzle)
+
+    # # Step 1 & 2: Check if puzzle is complete
+    # if is_complete(puzzle):
+    #     if is_correct(puzzle):
+    #         return puzzle  # Step 1: Success!
+    #     else:
+    #         return None   # Step 2: Failed
+
+    # # Step 3: Find first unused value and first unfilled coordinate
+    # unused = get_unused(puzzle)
+    # unfilled = get_unfilled(puzzle)
+
+    # if not unused or not unfilled:
+    #     return None  # Should not happen if puzzle is incomplete
+
+    # first_unused = unused[0]
+    # y, x = unfilled[0]  # First unfilled coordinate
+
+    # # Try each unused value
+    # while unused:
+    #     test_value = unused.pop(0)  # Get first unused value
+
+    #     puzzle[y][x] = test_value   # Step 3: Fill the slot
+
+    #     result = solve(puzzle)      # Step 4: Recursive call
+
+    #     if result is None:
+    #         # Step 5: Undo and try next value
+    #         puzzle[y][x] = None
+    #         # Continue to next iteration of while loop
+    #     else:
+    #         # Step 6: Success! Return the solution
+    #         return result
+
+    # # Step 7: All values tried, no solution found
+    # return None
+
     puzzle = deepcopy(original_puzzle)
 
-    # Step 1 & 2: Check if puzzle is complete
     if is_complete(puzzle):
         if is_correct(puzzle):
-            return puzzle  # Step 1: Success!
-        else:
-            return None   # Step 2: Failed
-
-    # Step 3: Find first unused value and first unfilled coordinate
-    unused = get_unused(puzzle)
-    unfilled = get_unfilled(puzzle)
-
-    if not unused or not unfilled:
-        return None  # Should not happen if puzzle is incomplete
-
-    first_unused = unused[0]
-    y, x = unfilled[0]  # First unfilled coordinate
-
-    # Try each unused value
-    while unused:
-        test_value = unused.pop(0)  # Get first unused value
-
-        puzzle[y][x] = test_value   # Step 3: Fill the slot
-
-        result = solve(puzzle)      # Step 4: Recursive call
-
-        if result is None:
-            # Step 5: Undo and try next value
-            puzzle[y][x] = None
-            # Continue to next iteration of while loop
-        else:
-            # Step 6: Success! Return the solution
+            return puzzle
+        return None
+    
+    row, col = get_unfilled(puzzle)[0]
+    nlist = get_unused(puzzle)
+    for n in nlist:
+        puzzle[row][col] = n
+        result = solve(puzzle)
+        if result != None:
             return result
-
-    # Step 7: All values tried, no solution found
     return None
 
 
@@ -185,3 +200,6 @@ def solve_9x9(puzzle: list) -> Optional[list]:
     """
     # Write your code here for the challenge
     pass
+
+if __name__ == "__main__":
+    solve(generate())
